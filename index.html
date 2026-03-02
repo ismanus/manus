@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Handy Liu Portfolio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    /* 定义高亮样式 */
+    .nav-active { color: #000 !important; font-weight: 700; }
+
+    .spring-easing {
+    transition-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  /* 悬停时的复合变换：向上跳跃 + 放大 + 稍微反向旋转 */
+  .photo-block {
+    /* 默认状态：轻微阴影，丝滑过渡 */
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), 
+                box-shadow 0.4s ease, 
+                z-index 0s; 
+    touch-action: none;
+    user-select: none;
+  }
+
+  /* 悬浮时：稍微抬起 */
+  .photo-block:hover:not(.dragging) {
+    transform: scale(1.02) rotate(0deg) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+    z-index: 50; /* 临时抬高，不永久置顶 */
+  }
+
+  /* 拖拽中：完全跟手，取消所有 transition 避免延迟感 */
+  .dragging {
+    transition: none !important; 
+    cursor: grabbing;
+    /* 增加大阴影和轻微放大，模拟“离地”感 */
+    box-shadow: 0 30px 60px rgba(0,0,0,0.12) !important;
+    transform: scale(1.05) !important; 
+    z-index: 999 !important;
+  }
+  /* 统一的圆角和背景模糊 */
+.ui-glass {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* 图标悬浮“浮起”感 */
+.footer-icon-btn {
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+}
+.footer-icon-btn:hover {
+  transform: translateY(-5px);
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.footer-icon-btn:active {
+  transform: translateY(-2px) scale(0.92);
+}
+
+/* 统一定义按钮容器 */
+.footer-icon-btn {
+  width: 44px;               /* 容器宽度 */
+  height: 44px;              /* 容器高度 */
+  display: flex;             /* 居中图标 */
+  align-items: center;
+  justify-content: center;
+  border-radius: 14px;       /* 统一圆角 */
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  background: transparent;    /* 初始背景透明 */
+}
+
+/* 统一定义图标图片 */
+.footer-icon-btn img {
+  width: 36px;               /* 图标宽度 */
+  height: 36px;              /* 图标高度 */
+  opacity: 1;              /* 初始透明度 */
+  transition: opacity 0.3s ease;
+}
+
+/* 统一的交互效果 */
+.footer-icon-btn:hover {
+  transform: translateY(-5px);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.footer-icon-btn:hover img {
+  opacity: 1;                /* 悬浮时图标变亮 */
+}
+
+.trail-image {
+  position: fixed;
+  pointer-events: none;
+  z-index: 100;
+  height: 60px;
+  width: auto;
+  will-change: transform, opacity;
+  /* 快速弹出动画 */
+  animation: quickPop 0.3s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes quickPop {
+  0% {
+    transform: translate(-50%, -50%) scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+}
+</style>
+  </style>
+</head>
+<body class="bg-white text-black antialiased">
+
+<div id="copy-toast" class="fixed top-8 left-1/2 -translate-x-1/2 z-[9999] px-6 py-2 bg-black text-white text-xs tracking-widest uppercase rounded-full shadow-2xl transition-all duration-500 opacity-0 translate-y-[-20px] pointer-events-none">
+  已复制
+</div>
+
+  <header class="fixed top-4 md:top-8 left-0 w-full flex justify-center z-50 px-4">
+    <nav class="bg-white/80 backdrop-blur-md border border-gray-100 rounded-full px-2 py-2 flex items-center shadow-sm">
+      <div id="nav-links" class="flex items-center space-x-4 md:space-x-8 px-4 md:px-6">
+        <a href="#home" class="nav-item text-xs md:text-sm font-medium text-gray-400 hover:text-black transition-all">👋HI!</a>
+        <a href="#projects" class="nav-item text-xs md:text-sm font-medium text-gray-400 hover:text-black transition-all">项目</a>
+        <a href="#about" class="nav-item text-xs md:text-sm font-medium text-gray-400 hover:text-black transition-all">关于</a>
+      </div>
+      <a href="mailto:manuslxc@gmail.com" class="bg-black text-white px-4 md:px-6 py-2 rounded-full text-xs md:text-sm font-medium hover:bg-gray-800 transition-all">
+        📮联系我
+      </a>
+    </nav>
+  </header>
+
+  <main id="home" class="section relative min-h-screen max-w-[1440px] mx-auto px-6 md:px-12 flex flex-col justify-end pb-24">
+    <div class="mb-8">
+      <h2 class="text-xl md:text-[32px] font-bold leading-tight tracking-tight">
+        你好！欢迎你访问我的UI/UX设计作品集，<br class="hidden md:block">
+        或许我会成为值得你信赖的设计伙伴。
+      </h2>
+    </div>
+    <div class="w-full">
+      <h1 id="hero-title" class="flex flex-col md:flex-row md:justify-between items-start md:items-baseline text-[clamp(60px,12vw,200px)] font-black leading-[0.8] tracking-tighter uppercase cursor-pointer relative">
+        <span>Handy</span>
+        <span>Liu</span>
+      </h1>
+    </div>
+  </main>
+
+ <section id="projects" class="section max-w-[1440px] mx-auto px-6 md:px-12 py-24">
+  
+  <div class="flex items-center space-x-2 mb-12">
+    <div class="w-2 h-2 bg-black rounded-full"></div>
+    <h3 class="text-xl font-bold">我的项目</h3>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-12">
+    
+    <a href="project-youown.html" class="group block cursor-pointer">
+      <div class="relative w-full aspect-video overflow-hidden rounded-[32px] bg-[#ffffff] 
+                  transition-all duration-500 ease-out
+                  group-hover:shadow-2xl group-hover:-translate-y-4 group-hover:rotate-[-2deg] active:scale-95">
+        
+        <img src="https://cdn.jsdelivr.net/gh/ismanus/manus@main/project-youown/youown-cover.png" 
+             alt="项目名称" 
+             class="w-full h-full object-cover transition-transform duration-700">
+        
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+           <span class="bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full border border-white/30 text-sm font-medium">查看项目</span>
+        </div>
+      </div>
+      
+      <div class="mt-6 transition-transform duration-500 group-hover:translate-x-2">
+        <h4 class="text-2xl font-bold text-gray-900">YOUOWN</h4>
+        <p class="text-gray-400 mt-1 text-sm tracking-wide">UIUX, APP, WEB</p>
+      </div>
+    </a>
+
+ 
+
+    <a href="project-bjqc.html" class="group block cursor-pointer">
+      <div class="relative w-full aspect-video overflow-hidden rounded-[32px] bg-[#ffffff] 
+                  transition-all duration-500 ease-out
+                  group-hover:shadow-2xl group-hover:-translate-y-4 group-hover:rotate-[-2deg] active:scale-95">
+        
+        <img src="https://cdn.jsdelivr.net/gh/ismanus/manus@main/project-bjqc/bjqc-cover.png" 
+             alt="项目名称" 
+             class="w-full h-full object-cover transition-transform duration-700">
+        
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+           <span class="bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full border border-white/30 text-sm font-medium">查看项目</span>
+        </div>
+      </div>
+      
+      <div class="mt-6 transition-transform duration-500 group-hover:translate-x-2">
+        <h4 class="text-2xl font-bold text-gray-900">宝骏汽车+</h4>
+        <p class="text-gray-400 mt-1 text-sm tracking-wide">UIUX, APP, WEB</p>
+      </div>
+    </a>
+
+
+    <a href="project-wss.html" class="group block cursor-pointer">
+      <div class="relative w-full aspect-video overflow-hidden rounded-[32px] bg-[#ffffff] 
+                  transition-all duration-500 ease-out
+                  group-hover:shadow-2xl group-hover:-translate-y-4 group-hover:rotate-[-2deg] active:scale-95">
+        
+        <img src="https://cdn.jsdelivr.net/gh/ismanus/manus@main/project-wss/wss-cover.png" 
+             alt="项目名称" 
+             class="w-full h-full object-cover transition-transform duration-700">
+        
+        <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+           <span class="bg-white/20 backdrop-blur-md text-white px-6 py-2 rounded-full border border-white/30 text-sm font-medium">查看项目</span>
+        </div>
+      </div>
+      
+      <div class="mt-6 transition-transform duration-500 group-hover:translate-x-2">
+        <h4 class="text-2xl font-bold text-gray-900">不正经制造</h4>
+        <p class="text-gray-400 mt-1 text-sm tracking-wide">UIUX, WEB</p>
+      </div>
+    </a>
+
+
+
+
+    </div>
+</section>
+
+<section id="about" class="section max-w-[1440px] mx-auto px-6 md:px-12 py-12 md:py-24 min-h-screen flex flex-col justify-end pb-12">
+  <div class="flex items-center space-x-2 mb-8">
+    <div class="w-2 h-2 bg-black rounded-full"></div>
+    <h3 class="text-xl font-bold">关于我</h3>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 items-stretch">
+    <div class="lg:col-span-2 bg-[#f5f5f5] rounded-[40px] p-8 md:p-10 flex flex-col justify-between min-h-[300px] lg:h-[380px]">
+      <div class="flex justify-end">
+        <a href="https://github.com/yourname" target="_blank" class="bg-black text-white px-8 py-2.5 rounded-full text-sm font-medium hover:bg-gray-800 transition-all">📄查看简历</a>
+      </div>
+      <p class="text-gray-500 leading-relaxed text-[15px] md:text-[16px] text-justify mt-6">
+       我是一名5年+经验的UI/UX设计师，具备卓越的审美和逻辑思维能力。拥有从0到1项目经验，善于学习并利用先进的设计思维，与产品和开发团队紧密协作。在视觉和交互层面，我专注于打造直观、流畅且富有情感的数字产品，能够精准平衡用户需求与品牌目标。
+      </p>
+    </div>
+
+    <div id="drag-container" class="lg:col-span-3 bg-[#f5f5f5] rounded-[40px] relative overflow-hidden h-[380px] touch-none">
+      </div>
+  </div>
+</section>
+
+<script>
+  function initPhotoDraggable() {
+    const container = document.getElementById('drag-container');
+    if (!container) return;
+    container.innerHTML = '';
+
+    // 【在此处添加你的图片链接】
+    const myPhotos = [
+      'https://cdn.jsdelivr.net/gh/ismanus/manus@main/photo/me-1.webp',
+      'https://cdn.jsdelivr.net/gh/ismanus/manus@main/photo/me-2.webp',
+
+    ];
+
+    let topZ = 10;
+    const isMobile = window.innerWidth < 768;
+    const photoWidth = isMobile ? 140 : 200; // 手机端 140px，桌面端 200px
+
+    // 如果你只放了一个链接，这里循环 5 次生成 5 张一样的，方便你测试堆叠效果
+    // 如果你放了多个链接，可以把 5 改为 myPhotos.length
+    for (let i = 0; i < myPhotos.length; i++) {
+      const block = document.createElement('img');
+      block.src = myPhotos[i % myPhotos.length];
+      block.draggable = false; // 禁用系统默认拖拽
+
+      // 基础样式：无阴影、无圆角、无背景
+      block.className = 'absolute cursor-grab active:cursor-grabbing';
+      
+      const containerW = container.offsetWidth;
+      const containerH = container.offsetHeight;
+
+      Object.assign(block.style, {
+        width: `${photoWidth}px`,
+        height: 'auto',
+        position: 'absolute',
+        zIndex: i,
+        // 初始随机位置与角度
+        left: `${Math.random() * (containerW - photoWidth)}px`,
+        top: `${Math.random() * (containerH - (isMobile ? 180 : 260))}px`,
+        transform: `rotate(${(Math.random() * 20) - 10}deg)`,
+        transition: 'transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)'
+      });
+
+      // --- 柔和置顶与拖拽逻辑 ---
+      let isDragging = false;
+      let startX, startY, blockLeft, blockTop;
+
+
+      block.addEventListener('mouseleave', () => {
+        if (isDragging) return;
+        const currentRot = block.style.transform.match(/rotate\((.*?)\)/)[0];
+        block.style.transform = `${currentRot} scale(1)`;
+      });
+
+      // 拖拽开始
+      const startAction = (e) => {
+        e.preventDefault();
+        isDragging = true;
+        block.style.zIndex = ++topZ;
+        
+        // 增加“离地”感动画
+        const currentRot = block.style.transform.match(/rotate\((.*?)\)/)[0];
+        block.style.transform = `${currentRot} scale(1.08)`;
+        block.style.filter = 'drop-shadow(0 10px 20px rgba(0,0,0,0.05))';
+        block.style.transition = 'transform 0.2s ease, filter 0.2s ease';
+
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        
+        startX = clientX;
+        startY = clientY;
+        blockLeft = block.offsetLeft;
+        blockTop = block.offsetTop;
+
+        // 稍微延迟后关闭 transition，确保拖拽绝对跟手
+        setTimeout(() => { if (isDragging) block.style.transition = 'none'; }, 100);
+      };
+
+      const moveAction = (e) => {
+        if (!isDragging) return;
+        const clientX = e.type.includes('touch') ? e.touches[0].clientX : e.clientX;
+        const clientY = e.type.includes('touch') ? e.touches[0].clientY : e.clientY;
+        block.style.left = `${blockLeft + (clientX - startX)}px`;
+        block.style.top = `${blockTop + (clientY - startY)}px`;
+      };
+
+      const endAction = () => {
+        if (!isDragging) return;
+        isDragging = false;
+        // 落地动画
+        block.style.transition = 'all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+        block.style.filter = 'none';
+        const currentRot = block.style.transform.match(/rotate\((.*?)\)/)[0];
+        block.style.transform = `${currentRot} scale(1)`;
+      };
+
+      block.addEventListener('mousedown', startAction);
+      window.addEventListener('mousemove', moveAction);
+      window.addEventListener('mouseup', endAction);
+      block.addEventListener('touchstart', startAction, { passive: false });
+      window.addEventListener('touchmove', moveAction, { passive: false });
+      window.addEventListener('touchend', endAction);
+
+      container.appendChild(block);
+    }
+  }
+
+  // 页面加载及尺寸改变时初始化
+  window.addEventListener('load', initPhotoDraggable);
+  let resizeTimeout;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(initPhotoDraggable, 300);
+  });
+</script>
+
+
+<footer class="max-w-[1440px] mx-auto px-6 md:px-12 pb-12 mt-20">
+  <div class="ui-glass rounded-[32px] px-8 py-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+    
+    <div class="text-sm font-medium tracking-tight text-gray-900">
+      © 2026 HANDY LIU. <span class="text-gray-400 ml-1">DESIGNED BY ME.</span>
+    </div>
+
+<div class="flex items-center space-x-2">
+  <button onclick="copyToClipboard('manusgoo', '微信')" class="footer-icon-btn">
+    <img src="https://cdn.jsdelivr.net/gh/ismanus/manus@main/icon/icon-wechat.png" alt="微信">
+  </button>
+
+  <button onclick="copyToClipboard('manuslxc@gmail.com', '邮箱')" class="footer-icon-btn">
+    <img src="https://cdn.jsdelivr.net/gh/ismanus/manus@main/icon/icon-email.png" alt="邮箱">
+  </button>
+
+  <a href="https://xhslink.com/m/3rUAIO6sKM1" target="_blank" class="footer-icon-btn">
+    <img src="https://cdn.jsdelivr.net/gh/ismanus/manus@main/icon/icon-red.png" alt="小红书">
+  </a>
+
+  <a href="https://github.com/yourname" target="_blank" class="footer-icon-btn">
+    <img src="https://cdn.jsdelivr.net/gh/ismanus/manus@main/icon/icon-github.png" alt="GitHub">
+  </a>
+
+
+</div>
+
+  </div>
+</footer>
+
+  <script>
+    // 1. 导航高亮逻辑
+    const sections = document.querySelectorAll('.section');
+    const navItems = document.querySelectorAll('.nav-item');
+
+    window.addEventListener('scroll', () => {
+      let current = '';
+      sections.forEach(section => {
+        const sectionTop = section.offsetTop;
+        const sectionHeight = section.clientHeight;
+        if (pageYOffset >= sectionTop - 200) { // 偏移200px提前触发高亮
+          current = section.getAttribute('id');
+        }
+      });
+
+      navItems.forEach(item => {
+        item.classList.remove('nav-active');
+        if (item.getAttribute('href').includes(current)) {
+          item.classList.add('nav-active');
+        }
+      });
+    });
+
+    // 2. 复制功能
+function copyToClipboard(text, platform) {
+  navigator.clipboard.writeText(text).then(() => {
+    const toast = document.getElementById('copy-toast');
+    if (!toast) return;
+
+    toast.innerText = `已复制${platform}`;
+    
+    // 弹出动画
+    toast.classList.remove('opacity-0', 'translate-y-[-20px]');
+    toast.classList.add('opacity-100', 'translate-y-0');
+
+    if (window.copyTimer) clearTimeout(window.copyTimer);
+    window.copyTimer = setTimeout(() => {
+      toast.classList.remove('opacity-100', 'translate-y-0');
+      toast.classList.add('opacity-0', 'translate-y-[-20px]');
+    }, 2000);
+  });
+    }
+
+      // 3. 浮动气泡图像轨迹 Image Trail
+document.addEventListener('DOMContentLoaded', () => {
+  const title = document.getElementById('hero-title');
+  if (!title) return;
+
+  const trailPhotos = [
+    'https://cdn.jsdelivr.net/gh/ismanus/manus@main/Image%20Trail/Trail-1.png',
+    'https://cdn.jsdelivr.net/gh/ismanus/manus@main/Image%20Trail/Trail-2.png',
+    'https://cdn.jsdelivr.net/gh/ismanus/manus@main/Image%20Trail/Trail-3.png',
+    'https://cdn.jsdelivr.net/gh/ismanus/manus@main/Image%20Trail/Trail-4.png',
+    'https://cdn.jsdelivr.net/gh/ismanus/manus@main/Image%20Trail/Trail-5.png'
+  ];
+
+  let currentTrailImg = null; // 用于记录当前正在显示的唯一图片
+  let lastX = 0;
+  let lastY = 0;
+
+  title.addEventListener('mousemove', (e) => {
+    // 稍微降低灵敏度门槛（比如 20px），让单图切换有跳动感
+    const dist = Math.hypot(e.clientX - lastX, e.clientY - lastY);
+    
+    if (dist > 100) {
+      // 1. 如果当前已有图片，立即移除
+      if (currentTrailImg) {
+        currentTrailImg.remove();
+      }
+
+      // 2. 创建新图片
+      const img = document.createElement('img');
+      img.src = trailPhotos[Math.floor(Math.random() * trailPhotos.length)];
+      img.className = 'trail-image';
+      const randomHeight = Math.floor(Math.random() * (100 - 60 + 1) + 40); // 随机 40px 到 80px 之间
+      img.style.height = `${randomHeight}px`;
+      
+      img.style.left = `${e.clientX}px`;
+      img.style.top = `${e.clientY}px`;
+
+      document.body.appendChild(img);
+      
+      // 3. 更新引用
+      currentTrailImg = img;
+      
+      lastX = e.clientX;
+      lastY = e.clientY;
+    }
+  });
+
+  // 4. 鼠标离开标题时，清除最后一张图，保持页面整洁
+  title.addEventListener('mouseleave', () => {
+    if (currentTrailImg) {
+      currentTrailImg.remove();
+      currentTrailImg = null;
+    }
+  });
+});
+    
+  </script>
+</body>
+</html>
